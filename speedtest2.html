@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Universe</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070a14; --card:rgba(255,255,255,.045); --border:rgba(255,255,255,.09);
+  --txt:#e9edf7; --mut:#8a93ab; --acc:#00e0ff; --acc2:#7c5cff;
+  --ok:#22e39b; --mid:#ffc542; --bad:#ff4d6d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:hidden}
+body{font-family:'Tajawal',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-20%;z-index:-1;
+  background:radial-gradient(40% 35% at 20% 15%,rgba(124,92,255,.28),transparent 70%),
+             radial-gradient(35% 30% at 85% 30%,rgba(0,224,255,.18),transparent 70%),
+             radial-gradient(40% 40% at 50% 100%,rgba(255,45,120,.12),transparent 70%);
+  animation:drift 18s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(3%,-3%) scale(1.05)}}
+.wrap{max-width:1140px;margin:auto;padding:28px 18px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:grid;place-items:center;box-shadow:0 8px 30px rgba(0,224,255,.35)}
+.brand h1{font-size:22px;font-weight:800}
+.brand p{font-size:13px;color:var(--mut)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:22px;backdrop-filter:blur(16px)}
+
+/* Network / server info */
+.net{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:22px}
+.ni{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px 14px;backdrop-filter:blur(12px);min-width:0}
+.ni .k{font-size:12px;color:var(--mut);display:flex;align-items:center;gap:6px}
+.ni .v{font-size:15px;font-weight:700;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:ltr;text-align:right}
+.ni .v.ar{direction:rtl}
+.ni.srv{border-color:rgba(0,224,255,.35);background:linear-gradient(135deg,rgba(0,224,255,.08),rgba(124,92,255,.08))}
+.ip-hide{cursor:pointer}
+
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:22px}
+@media(max-width:860px){.hero{grid-template-columns:1fr}}
+
+/* Gauge — segmented ring */
+.gauge-box{display:flex;flex-direction:column;align-items:center}
+.gwrap{position:relative;width:100%;max-width:380px}
+.gauge{width:100%;display:block}
+.gauge .lbl{fill:#6f7891;font-size:10.5px;font-family:Tajawal;font-weight:700}
+.gauge .tk{transition:stroke .25s ease}
+.center{position:absolute;top:57.4%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.center .who{font-size:12px;color:var(--mut);margin-bottom:4px;min-height:16px;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.center .val{font-size:54px;font-weight:800;letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1;
+  background:linear-gradient(180deg,#fff,#a9f3ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.center .unit{color:var(--mut);font-size:13px;margin-top:4px}
+.phase{margin-top:2px;font-size:14px;color:var(--acc);font-weight:700;min-height:22px;text-align:center}
+.start{position:absolute;top:57.4%;left:50%;transform:translate(-50%,-50%);width:140px;height:140px;border-radius:50%;border:none;cursor:pointer;
+  font-family:inherit;font-size:26px;font-weight:800;color:#fff;letter-spacing:1px;
+  background:radial-gradient(circle at 30% 30%,#2fe9ff,#6a4cff 70%);
+  box-shadow:0 0 0 10px rgba(0,224,255,.08),0 0 60px rgba(0,224,255,.45);transition:.3s}
+.start::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:2px solid rgba(0,224,255,.5);animation:ring 2s ease-out infinite}
+@keyframes ring{from{transform:scale(.9);opacity:1}to{transform:scale(1.25);opacity:0}}
+.start:hover{transform:translate(-50%,-50%) scale(1.06)}
+.hidden{display:none!important}
+
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:18px;padding:16px}
+.stat .k{font-size:13px;color:var(--mut);display:flex;align-items:center;gap:6px}
+.stat .v{font-size:30px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:13px;color:var(--mut);font-weight:500;margin-inline-start:4px}
+.stat.active{border-color:rgba(0,224,255,.5);box-shadow:inset 0 0 30px rgba(0,224,255,.08)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.uses{margin-top:14px;display:grid;gap:8px}
+.use{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--border)}
+.badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--mut)}
+
+/* Services */
+.sec-title{display:flex;justify-content:space-between;align-items:center;margin:30px 4px 14px}
+.sec-title h2{font-size:18px;font-weight:800}
+.sec-title span{font-size:13px;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.svc{min-width:0;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px;
+  opacity:0;transform:translateY(24px) scale(.96);transition:border-color .3s}
+.svc.show{animation:pop .55s cubic-bezier(.2,.9,.3,1.3) forwards}
+@keyframes pop{to{opacity:1;transform:none}}
+.svc-top{display:flex;align-items:center;gap:12px}
+.ico{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex-shrink:0;position:relative}
+.ico svg{width:21px;height:21px}
+.svc.testing .ico::after{content:"";position:absolute;inset:-5px;border-radius:20px;border:2px solid var(--c);animation:ring 1.2s ease-out infinite}
+.svc.testing{border-color:var(--c)}
+.svc .nm{font-weight:800;font-size:16px}
+.svc .sub{font-size:12px;color:var(--mut)}
+.svc .st{margin-inline-start:auto;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--mut);white-space:nowrap}
+.mets{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.met{background:rgba(255,255,255,.03);border-radius:12px;padding:8px 10px}
+.met .mk{font-size:11px;color:var(--mut)}
+.met .mv{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.met .mv small{font-size:11px;color:var(--mut);font-weight:500;margin-inline-start:3px}
+.bar{height:6px;border-radius:9px;background:rgba(255,255,255,.06);overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:9px;transition:width .4s ease,background .3s}
+.meta{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--mut)}
+.meta .host{direction:ltr;unicode-bidi:plaintext;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62%}
+.proto{font-weight:700;color:var(--acc)}
+.shimmer{background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.14),rgba(255,255,255,.04));background-size:200% 100%;animation:sh 1.2s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+
+/* ISP + server box under the gauge */
+.srvbox{width:100%;margin-top:14px;display:grid;gap:10px}
+.srvbox .row{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.035);border:1px solid var(--border);border-radius:16px;padding:12px 14px}
+.srvbox .row.srv{border-color:rgba(0,224,255,.35);background:linear-gradient(135deg,rgba(0,224,255,.07),rgba(124,92,255,.07))}
+.srvbox .ri{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.06);display:grid;place-items:center;font-size:19px;flex-shrink:0}
+.srvbox .rt{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.srvbox small{font-size:12px;color:var(--mut)}
+.srvbox b{font-size:16px;font-weight:800;line-height:1.35;word-break:break-word}
+.srvbox #srvMeta{font-size:12.5px;color:var(--acc);font-weight:700}
+.chg{border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--txt);font-family:inherit;font-weight:700;font-size:13px;border-radius:10px;padding:7px 12px;cursor:pointer}
+.chg:hover{border-color:var(--acc)}
+#srvSel{width:100%;background:#0d1222;color:var(--txt);border:1px solid var(--border);border-radius:12px;padding:10px;font-family:inherit;font-size:14px}
+/* ===== Desktop: everything on one screen, no scrolling ===== */
+#srvSel{grid-column:1/-1}
+@media(min-width:1000px){
+  .wrap{max-width:1360px;padding:14px 22px 14px}
+  header{margin-bottom:12px}
+  .brand h1{font-size:20px}.logo{width:40px;height:40px}
+  .net{margin:0;display:flex;gap:8px}
+  .ni{padding:7px 14px;min-width:180px}.ni .v{font-size:14px;margin-top:1px}
+  .hero{grid-template-columns:minmax(320px,.8fr) 1.2fr;gap:14px}
+  .panel{padding:14px 16px;border-radius:20px}
+  .gwrap{max-width:320px}
+  .center .val{font-size:46px}
+  .start{width:118px;height:118px;font-size:23px}
+  .side{display:flex;flex-direction:column;gap:10px;justify-content:space-between}
+  .srvbox{margin-top:0;grid-template-columns:1fr 1fr;gap:10px}
+  .srvbox .row{padding:9px 12px}.srvbox b{font-size:14px}.srvbox .ri{width:34px;height:34px;font-size:16px}
+  .stats{grid-template-columns:repeat(4,1fr);gap:10px}
+  .stat{padding:10px 12px}.stat .v{font-size:25px;margin-top:2px}
+  .uses{margin-top:0;grid-template-columns:1fr 1fr}
+  .use{padding:8px 12px;font-size:13px}
+  .sec-title{margin:12px 4px 8px}.sec-title h2{font-size:16px}
+  .grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+  .svc{padding:10px;gap:8px;border-radius:16px}
+  .svc-top{gap:8px}
+  .ico{width:34px;height:34px;border-radius:10px}.ico svg{width:18px;height:18px}
+  .svc.testing .ico::after{inset:-4px;border-radius:13px}
+  .svc .nm{font-size:13.5px}.svc .sub{font-size:10.5px}
+  .svc .st{font-size:10.5px;padding:2px 7px}
+  .mets{gap:6px}.met{padding:6px 8px}.met .mk{font-size:10.5px}.met .mv{font-size:16px}
+  .meta{font-size:10px;flex-direction:column;gap:2px}.meta .host{max-width:100%}
+  .note{display:none}
+}
+@media(min-width:1000px) and (max-width:1279px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr))} }
+
+/* ===== Mobile ===== */
+@media(max-width:600px){
+  .wrap{padding:16px 12px 40px}
+  .logo{width:38px;height:38px;border-radius:12px}
+  .brand h1{font-size:19px}
+  .panel{padding:14px;border-radius:20px}
+  .net{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0;width:100%}
+  .ni{padding:10px 12px}.ni .v{font-size:13.5px}
+  .center .val{font-size:42px}
+  .start{width:110px;height:110px;font-size:22px}
+  .stats{gap:8px}.stat{padding:12px}.stat .v{font-size:23px}
+  .use{font-size:13px;padding:9px 12px}
+  .srvbox b{font-size:14.5px}.srvbox .ri{width:34px;height:34px;font-size:16px}
+  .sec-title{margin:22px 2px 10px}.sec-title h2{font-size:16px}
+  .grid{grid-template-columns:1fr 1fr;gap:9px}
+  .svc{padding:11px;gap:8px;border-radius:16px}
+  .svc-top{gap:8px}
+  .ico{width:32px;height:32px;border-radius:10px}.ico svg{width:17px;height:17px}
+  .svc.testing .ico::after{inset:-4px;border-radius:13px}
+  .svc .nm{font-size:13px}.svc .sub{display:none}
+  .svc .st{font-size:10.5px;padding:2px 7px}
+  .mets{gap:6px}.met{padding:6px 7px}.met .mk{font-size:10px}.met .mv{font-size:16px}
+  .meta{font-size:10px;flex-direction:column;gap:2px}.meta .host{max-width:100%}
+}
+.again{display:block;margin:26px auto 0;padding:12px 30px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--txt);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.again:hover{border-color:var(--acc)}
+.note{margin-top:22px;font-size:12px;color:var(--mut);text-align:center;line-height:1.9}
+.err{color:var(--bad);font-size:13px;text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 14l4-6"/><path d="M3.5 17a9 9 0 1 1 17 0"/></svg></div>
+      <div><h1>Test Universe</h1><p>سرعة الخط · سرعة وبنق التطبيقات · سيرفر مزودك</p></div>
+    </div>
+    <section class="net" id="net">
+      <div class="ni ip-hide" title="اضغط للإظهار/الإخفاء"><div class="k">🌐 عنوان IP</div><div class="v" id="n-ip">…</div></div>
+      <div class="ni"><div class="k">📍 موقعك</div><div class="v ar" id="n-loc">…</div></div>
+    </section>
+  </header>
+
+
+  <section class="hero">
+    <div class="panel gauge-box">
+      <div class="gwrap">
+        <svg class="gauge" viewBox="0 0 320 270">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset=".6" stop-color="#00e0ff"/><stop offset="1" stop-color="#ff4dd2"/></linearGradient>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <radialGradient id="core"><stop offset="0" stop-color="rgba(0,224,255,.16)"/><stop offset="1" stop-color="rgba(0,224,255,0)"/></radialGradient>
+          </defs>
+          <circle cx="160" cy="155" r="80" fill="url(#core)"/>
+          <g id="ticks" filter="url(#glow)"></g>
+          <path id="track" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="4" stroke-linecap="round"/>
+          <path id="arc" fill="none" stroke="url(#g1)" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/>
+          <circle id="dot" r="6" fill="#fff" filter="url(#glow)" style="transition:cx .25s,cy .25s"/>
+          <g id="labels"></g>
+        </svg>
+        <div class="center hidden" id="center">
+          <div class="who" id="who"></div>
+          <div class="val" id="val">0</div>
+          <div class="unit" id="unit">Mbps</div>
+        </div>
+        <button class="start" id="startBtn">ابدأ</button>
+      </div>
+      <div class="phase" id="phase"></div>
+      <div class="err" id="err"></div>
+
+    </div>
+
+    <div class="panel side">
+      <div class="srvbox">
+        <div class="row">
+          <div class="ri">🏢</div>
+          <div class="rt"><small>مزود الخدمة</small><b id="n-isp">…</b></div>
+        </div>
+        <div class="row srv">
+          <div class="ri">🖥️</div>
+          <div class="rt"><small>سيرفر الفحص</small><b id="srvName">جاري اختيار أقرب سيرفر…</b><span id="srvMeta"></span></div>
+          <button class="chg" id="chgBtn" title="تغيير السيرفر">تغيير</button>
+        </div>
+        <select id="srvSel" class="hidden"></select>
+      </div>
+      <div class="stats">
+        <div class="stat" id="s-ping"><div class="k"><span class="dot" style="background:var(--mid)"></span>البنق (Ping)</div><div class="v"><span id="ping">—</span><small>ms</small></div></div>
+        <div class="stat" id="s-jit"><div class="k"><span class="dot" style="background:var(--acc2)"></span>التذبذب (Jitter)</div><div class="v"><span id="jit">—</span><small>ms</small></div></div>
+        <div class="stat" id="s-dl"><div class="k"><span class="dot" style="background:var(--acc)"></span>التحميل</div><div class="v"><span id="dl">—</span><small>Mbps</small></div></div>
+        <div class="stat" id="s-ul"><div class="k"><span class="dot" style="background:#ff4dd2"></span>الرفع</div><div class="v"><span id="ul">—</span><small>Mbps</small></div></div>
+      </div>
+      <div class="uses">
+        <div class="use"><span>🎮 الألعاب أونلاين</span><span class="badge" id="u-game">—</span></div>
+        <div class="use"><span>📺 يوتيوب بدقة 4K</span><span class="badge" id="u-4k">—</span></div>
+        <div class="use"><span>📱 ريلزات</span><span class="badge" id="u-short">—</span></div>
+        <div class="use"><span>📞 مكالمات فيديو</span><span class="badge" id="u-call">—</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="svcSection" class="hidden">
+    <div class="sec-title"><h2>سرعة وبنق التطبيقات</h2><span id="svcStatus">جاري الفحص…</span></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <p class="note">
+    سرعة كل تطبيق تُقاس بتحميل ملفات حقيقية من خوادم التطبيق نفسه (CDN) لمدة ثوانٍ، والبنق يُقاس لنفس الخوادم.<br>
+    البنق والرفع يُقاسان على سيرفر مزودك أو أقرب سيرفر داخل العراق. بنق ببجي يُقاس لأقرب مركز بيانات أوروبي لسيرفرات المباريات (AWS).
+  </p>
+</div>
+
+<script>
+/* ===================== Icons (generic glyphs) ===================== */
+const I = {
+  play:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5.5v13l11-6.5z"/></svg>',
+  note:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3" fill="#fff"/><circle cx="17" cy="16" r="3" fill="#fff"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.8 3 2.6 3.5 5.2"/></svg>',
+  cam:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="#fff"/></svg>',
+  chat:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5A8.5 8.5 0 1 1 21 12z"/></svg>',
+  aim:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="1.5" fill="#fff"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>',
+};
+
+/* ===================== Services =====================
+   ping  : endpoints for latency (no-cors)
+   assets: real CORS-enabled files hosted on each app's CDN (verified) for throughput  */
+const YT = ['aqz-KE-bpKQ','dQw4w9WgXcQ','kJQP7kiw5Fk','9bZkp7q19f0','OPf0YbXqDm0','RgKAFK5djSk','hT_nvWreIhg','CevxZvSJLk8']
+           .map(id=>`https://i.ytimg.com/vi/${id}/maxresdefault.jpg`);
+const TT = 'https://sf16-website-login.neutral.ttwstatic.com/obj/tiktok_web_login_static/tiktok/webapp/main/react-v18/webapp-desktop/';
+const SERVICES = [
+  {id:'yt', name:'YouTube', ar:'يوتيوب', c:'#ff2d2d', bg:'linear-gradient(135deg,#ff4d4d,#c40000)', icon:I.play,
+   ping:['https://i.ytimg.com/generate_204','https://www.youtube.com/generate_204'], assets:YT},
+  {id:'tt', name:'TikTok', ar:'تيك توك', c:'#25f4ee', bg:'linear-gradient(135deg,#25f4ee,#fe2c55)', icon:I.note,
+   ping:['https://www.tiktok.com/favicon.ico','https://sf16-website-login.neutral.ttwstatic.com/favicon.ico'],
+   assets:[TT+'static/js/npm-react.6fd94d11.js',TT+'static/js/cache.tux.1abe1f5f.js',TT+'explore-prefetch.a25beaaf.js']},
+  {id:'fb', name:'Facebook', ar:'فيسبوك · ميتا', c:'#1877f2', bg:'linear-gradient(135deg,#3b8bff,#0a4fc2)', icon:I.users,
+   ping:['https://static.xx.fbcdn.net/rsrc.php/yj/r/wG435t6XAqR.woff2','https://www.facebook.com/favicon.ico'],
+   assets:['https://static.xx.fbcdn.net/rsrc.php/yQ/r/-pkMfchyeAZ.woff2','https://static.xx.fbcdn.net/rsrc.php/v4/yu/r/NTg39fiFsBT.js','https://static.xx.fbcdn.net/rsrc.php/yj/r/wG435t6XAqR.woff2']},
+  {id:'ig', name:'Instagram', ar:'إنستغرام · ميتا', c:'#e1306c', bg:'linear-gradient(135deg,#feda75,#d62976 50%,#4f5bd5)', icon:I.cam,
+   ping:['https://static.cdninstagram.com/rsrc.php/v4/yu/r/NTg39fiFsBT.js','https://www.instagram.com/favicon.ico'],
+   assets:['https://static.cdninstagram.com/rsrc.php/v4/yB/r/tNhiWWnJLap.js','https://static.cdninstagram.com/rsrc.php/v4/yu/r/NTg39fiFsBT.js']},
+  {id:'wa', name:'WhatsApp', ar:'واتساب · ميتا', c:'#25d366', bg:'linear-gradient(135deg,#3ee77d,#0f9d58)', icon:I.chat,
+   ping:['https://static.whatsapp.net/rsrc.php/v4/yu/r/NTg39fiFsBT.js','https://web.whatsapp.com/favicon.ico'],
+   assets:['https://static.whatsapp.net/rsrc.php/yQ/r/-pkMfchyeAZ.woff2','https://static.whatsapp.net/rsrc.php/v4/yu/r/NTg39fiFsBT.js']},
+  {id:'pubg', name:'PUBG Mobile', ar:'ببجي موبايل', c:'#f2a900', bg:'linear-gradient(135deg,#ffcc33,#c77800)', icon:I.aim,
+   ping:[],
+   /* PUBG Mobile Middle-East match servers are hosted on AWS in the Gulf — ping each, keep the nearest.
+      Europe is only a fallback if no Middle-East region answers. */
+   regions:[['me-central-1','الإمارات (الشرق الأوسط)'],['me-south-1','البحرين (الشرق الأوسط)']],
+   fallback:[['eu-central-1','فرانكفورت (أوروبا)'],['eu-south-1','ميلانو (أوروبا)']],
+   assets:['https://www.pubgmobile.com/act/resource/long_cache_30d/fonts/ar.ttf','https://www.pubgmobile.com/sgp/milo-next/long_cache_30d/milo.es5.js']},
+  {id:'gg', name:'Google', ar:'جوجل', c:'#4285f4', bg:'linear-gradient(135deg,#4285f4,#34a853)', icon:I.search,
+   ping:['https://www.google.com/generate_204','https://www.gstatic.com/generate_204'], assets:[]},
+];
+const APP_SPEED_MS = 5000, APP_STREAMS = 6;
+
+/* ===================== Helpers ===================== */
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const median = a => {const s=[...a].sort((x,y)=>x-y);const m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const jitterOf = a => a.length<2?0:a.slice(1).reduce((s,v,i)=>s+Math.abs(v-a[i]),0)/(a.length-1);
+const bust = u => u+(u.includes('?')?'&':'?')+'r='+Math.random().toString(36).slice(2);
+const fmt = v => v==null?'—':v>=100?Math.round(v):v>=10?v.toFixed(1):v.toFixed(2);
+try{performance.setResourceTimingBufferSize(10000)}catch(e){}
+
+function pingGrade(ms){
+  if(ms==null) return {t:'لا يستجيب',c:'var(--bad)',s:0};
+  if(ms<40)  return {t:'ممتاز',c:'var(--ok)',s:3};
+  if(ms<90)  return {t:'جيد',c:'#8be36b',s:2};
+  if(ms<170) return {t:'متوسط',c:'var(--mid)',s:1};
+  return {t:'ضعيف',c:'var(--bad)',s:0};
+}
+function speedColor(m){return m==null?'var(--mut)':m>=25?'var(--ok)':m>=10?'#8be36b':m>=4?'var(--mid)':'var(--bad)'}
+function setBadge(el,t,c){el.textContent=t;el.style.color=c;el.style.background=c.replace('var(','').length?'rgba(255,255,255,.06)':'';}
+
+/* ===================== Gauge ===================== */
+const CX=160,CY=155,R=86,A0=-225,A1=45,NT=57;       // NT ticks → a major tick every 7 (= each scale label)
+const STEPS=[0,5,10,25,50,100,250,500,1000];
+const pol=(a,r=R)=>[CX+r*Math.cos(a*Math.PI/180),CY+r*Math.sin(a*Math.PI/180)];
+const arcPath=(a0,a1,r=R)=>{const[x0,y0]=pol(a0,r),[x1,y1]=pol(a1,r);return `M${x0} ${y0} A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${x1} ${y1}`};
+function frac(v){if(v<=0)return 0;if(v>=1000)return 1;
+  for(let i=1;i<STEPS.length;i++) if(v<=STEPS[i]) return (i-1+(v-STEPS[i-1])/(STEPS[i]-STEPS[i-1]))/(STEPS.length-1)}
+const tickColor=t=>t<.6?`hsl(${258-73*(t/.6)},100%,66%)`:`hsl(${185+(315-185)*((t-.6)/.4)},100%,66%)`; // purple → cyan → pink
+let TICKS=[];
+(function(){
+  $('track').setAttribute('d',arcPath(A0,A1));
+  let g='';for(let i=0;i<NT;i++){const a=A0+(A1-A0)*i/(NT-1),maj=i%7===0;
+    const[x1,y1]=pol(a,98),[x2,y2]=pol(a,maj?122:114);
+    g+=`<line class="tk" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,.09)" stroke-width="${maj?3.4:2.6}" stroke-linecap="round"/>`}
+  $('ticks').innerHTML=g;TICKS=[...$('ticks').children];
+  $('labels').innerHTML=STEPS.map((s,i)=>{const[x,y]=pol(A0+(A1-A0)*i/(STEPS.length-1),137);
+    return `<text class="lbl" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle">${s}</text>`}).join('');
+  setGauge(0)})();
+function setGauge(v,showVal=true){const f=frac(v),a=A0+(A1-A0)*f;
+  $('arc').setAttribute('d',f<0.003?'':arcPath(A0,a));
+  TICKS.forEach((t,i)=>{const p=i/(NT-1);t.setAttribute('stroke',p<=f+1e-6&&f>0?tickColor(p):'rgba(255,255,255,.09)')});
+  const[x,y]=pol(a);const d=$('dot');d.setAttribute('cx',x);d.setAttribute('cy',y);d.style.opacity=f>0?1:.35;
+  if(showVal) $('val').textContent=fmt(v)}
+
+/* ===================== Network / server info ===================== */
+/* Each source is independent so a single failure never blanks the panel.
+   Works from file:// (origin "null"), local server, or hosted page.          */
+const IATA={IST:'إسطنبول',SAW:'إسطنبول',BGW:'بغداد',EBL:'أربيل',BSR:'البصرة',NJF:'النجف',ISU:'السليمانية',
+  FRA:'فرانكفورت',AMS:'أمستردام',DXB:'دبي',FJR:'الفجيرة',AMM:'عمّان',KWI:'الكويت',DOH:'الدوحة',BAH:'البحرين',RUH:'الرياض',
+  JED:'جدة',DMM:'الدمام',MCT:'مسقط',BEY:'بيروت',IKA:'طهران',THR:'طهران',ATH:'أثينا',SOF:'صوفيا',VIE:'فيينا',MRS:'مرسيليا',
+  LHR:'لندن',CDG:'باريس',MXP:'ميلانو',BUD:'بودابست',WAW:'وارسو',OTP:'بوخارست',TBS:'تبليسي',EVN:'يريفان',GYD:'باكو',
+  CAI:'القاهرة',ESB:'أنقرة',ADB:'إزمير',KBP:'كييف',DME:'موسكو',SVO:'موسكو',SIN:'سنغافورة',BOM:'مومباي'};
+const setV=(id,v)=>{const e=$(id);if(v){e.textContent=v;return true}return false};
+async function getJSON(u,t=5000){const c=new AbortController(),x=setTimeout(()=>c.abort(),t);
+  try{const r=await fetch(u,{cache:'no-store',signal:c.signal});if(!r.ok)throw 0;return await r.json()}finally{clearTimeout(x)}}
+async function getTrace(){
+  for(const u of ['https://speed.cloudflare.com/cdn-cgi/trace','https://www.cloudflare.com/cdn-cgi/trace','https://1.1.1.1/cdn-cgi/trace']){
+    try{const t=await (await fetch(u,{cache:'no-store'})).text();
+      const o=Object.fromEntries(t.trim().split('\n').map(l=>l.split('=')));if(o.colo)return o}catch(_){}
+  }return null;
+}
+async function getGeo(){
+  try{const j=await getJSON('https://ipwho.is/');if(j.success!==false&&j.ip)
+    return {ip:j.ip,isp:j.connection?.isp||j.connection?.org,org:j.connection?.org,asn:j.connection?.asn,city:j.city,country:j.country,lat:j.latitude,lon:j.longitude}}catch(_){}
+  try{const j=await getJSON('https://ipapi.co/json/');if(j.ip)
+    return {ip:j.ip,isp:j.org,asn:(j.asn||'').replace(/^AS/,''),city:j.city,country:j.country_name,lat:j.latitude,lon:j.longitude}}catch(_){}
+  try{const j=await getJSON('https://get.geojs.io/v1/ip/geo.json');if(j.ip)
+    return {ip:j.ip,isp:j.organization_name,asn:j.asn,city:j.city,country:j.country,lat:+j.latitude,lon:+j.longitude}}catch(_){}
+  return null;
+}
+let GEO=null;
+async function loadNetwork(){
+  const [tr,geo]=await Promise.all([getTrace(),getGeo()]); GEO=geo;
+  const ip=geo?.ip||tr?.ip; const ipEl=$('n-ip'); ipEl.dataset.ip=ip||'';
+  setV('n-ip',ip)||setV('n-ip','غير متاح');
+  setV('n-isp',geo?.isp)||setV('n-isp','غير متاح');
+  setV('n-loc',[geo?.city,geo?.country].filter(Boolean).join('، ')||(tr?.loc||''))||setV('n-loc','غير متاح');
+  CF_NODE=tr?.colo?`${IATA[tr.colo]||''} (${tr.colo})`.trim():'';
+}
+let CF_NODE='';
+
+/* ===================== Ookla servers in Iraq (WebSocket protocol) =====================
+   [id, sponsor, city, host]  —  "~" = ".prod.hosts.ooklaserver.net". Port 8080.
+   WebSocket isn't subject to CORS, so this works even when the page is opened as a local file. */
+const OOKLA=[
+ [69129,"Iraq Smart Techs (IQSTS)","العمارة","speedtest.iqsts.com~",31.84,47.14],[70758,"Hayat FTTH","العمارة","sp2.hayat-isp.net~",31.84,47.14],
+ [38950,"Zain IQ","بغداد","speedtest.iq.zain.com",33.34,44.40],[39247,"Al-Jazeera Telecom","بغداد","speedtest.jt.iq~",33.32,44.39],
+ [47123,"Asiacell AP","بغداد","speedtest-bgdap.asiacell.com~",33.32,44.39],[47719,"HALA FTTH","بغداد","speedtest.halasat-ftth.iq~",33.32,44.39],
+ [49137,"Super Cell Network","بغداد","speedtest.supercellnetwork.com~",33.32,44.39],[57716,"الوطني للانترنت - Alwatani","بغداد","speedtest1.ftth.iq~",33.32,44.39],
+ [61970,"GigaNet Telecom","بغداد","speedtest.gntcld.net~",33.32,44.37],[69686,"GCCIT","بغداد","speedtest.gccitcom.com~",33.34,44.40],
+ [74514,"Iraq Smart Techs (IQSTS)","بغداد","bgwspeedtest.iqsts.com~",33.32,44.37],[74677,"SKYLINE IQ","بغداد","speedtest.skylineiq.com~",33.32,44.37],
+ [74877,"Earthlink Telecom","بغداد","speedtest2.earthlinktele.com",33.32,44.39],[76414,"Shams Telecom","بغداد","speedtest.shams-tele.com",33.31,44.37],
+ [37304,"Asiacell","البصرة","speedtest-bsr.asiacell.com~",30.53,47.77],[46713,"Zain IQ","البصرة","speedtestbas.iq.zain.com~",30.53,47.77],
+ [62164,"Fiberx IQ","البصرة","wataniya.cloudns.nz~",30.53,47.77],[46767,"Zain IQ","الديوانية","speedtestdiw.iq.zain.com~",31.97,44.90],
+ [25184,"O3 FTTH","دهوك","speedtest.o3-telecom.com~",36.86,42.99],[6606,"Tarinnet","أربيل","speedtest.tarinnet.info~",36.19,44.01],
+ [25218,"O3 FTTH","أربيل","speedtest2.o3-telecom.com",36.19,44.01],[28476,"Newroz Telecom","أربيل","spd1.newroztelecom.com~",36.19,44.01],
+ [36206,"Pulk Company","أربيل","speedtesterb.alsardfiber.com~",36.19,44.01],[37941,"Online Company","أربيل","speedtest.onlineco.net~",36.19,44.01],
+ [43974,"KorekTel","أربيل","speedtest.korektel.com~",36.19,44.01],[73403,"DIL Technology","أربيل","speedtesterb.diltechnology.com~",36.19,44.01],
+ [75876,"Luxe Network","أربيل","speedtest.luxeisp.com~",36.19,44.01],[59206,"AL-Rahma FTTH","الفلوجة","speedtest.rahmatele.com~",33.34,43.78],
+ [70111,"Quicknet","الحلة","hilla.cloudns.nz~",32.47,44.43],[9154,"Asiacell","كربلاء","speedtest-krb.asiacell.com~",32.60,44.02],
+ [70110,"Quicknet","كربلاء","karbala.cloudns.nz~",32.60,44.02],[71128,"Zain IQ","كربلاء","speedtestkar.iq.zain.com~",32.60,44.02],
+ [47065,"Zain IQ","كركوك","speedtestkir.iq.zain.com",35.47,44.38],[73079,"Tarik AL Thuraya","كركوك","speedtest.tarik-althuraya.net~",35.47,44.38],
+ [62149,"Fiberx IQ","الكوت","eitis.cloudns.nz~",32.52,45.82],[62150,"Quicknet","الكوت","kut.cloudns.nz~",32.52,45.82],
+ [25861,"Datanet ISP","ميسان","speedtest.datanetiraq.net~",31.85,47.16],[56363,"NBTEL","الموصل","speedtest.nbtel.iq",36.36,43.16],
+ [44649,"Asiacell","النجف","speedtest-njf.asiacell.com~",32.01,44.33],[46785,"Zain IQ","النجف","speedtestnaj.iq.zain.com",32.01,44.33],
+ [62685,"Quicknet","النجف","quicknet.najaf.cloudns.nz~",32.01,44.33],[16882,"Pulk Company","السليمانية","speedtest.alsardfiber.com~",35.55,45.43],
+ [32669,"Asiacell","السليمانية","speedtest-sulfm.asiacell.com~",35.56,45.44],[38675,"Seven Net Layers","السليمانية","spt1.sevennet.net~",35.55,45.43],
+ [59703,"Tishknet","السليمانية","spt1.tishknet.com~",35.55,45.43],
+].map(([id,sp,city,h,lat,lon])=>({id,sp,city,lat,lon,host:h.replace('~','.prod.hosts.ooklaserver.net')+':8080'}));
+let SERVER=null;          // chosen Ookla server, or null → Cloudflare fallback
+const GENERIC=/^(telecom|telecommunications?|ftth|company|co|ltd|iq|iraq|network|networks|isp|internet|services?|for|the|and|al|smart|techs?|technology|equipment|trading|dmcc|llc|group|communications?|net)$/i;
+const tokens=s=>(s||'').toLowerCase().replace(/[^a-z0-9؀-ۿ ]/g,' ').split(/\s+/).filter(w=>w.length>=3&&!GENERIC.test(w));
+const ispMatch=(srv,isp)=>{const t=tokens(isp);return tokens(srv.sp).some(w=>t.some(x=>x.includes(w)||w.includes(x)))};
+const dist=(a,b,c,d)=>{const R=6371,r=Math.PI/180,x=Math.sin((c-a)*r/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin((d-b)*r/2)**2;return 2*R*Math.asin(Math.sqrt(x))};
+
+function wsOpen(host,timeout=4000){return new Promise((res,rej)=>{let ws;try{ws=new WebSocket('wss://'+host+'/ws')}catch(e){return rej(e)}
+  ws.binaryType='arraybuffer';const t=setTimeout(()=>{try{ws.close()}catch(_){};rej(new Error('timeout'))},timeout);
+  ws.onopen=()=>{clearTimeout(t);res(ws)};ws.onerror=()=>{clearTimeout(t);rej(new Error('ws'))}})}
+function wsText(ws,cmd,timeout=3000){return new Promise((res,rej)=>{const t=setTimeout(()=>rej(new Error('timeout')),timeout);
+  ws.onmessage=e=>{if(typeof e.data==='string'){clearTimeout(t);res(e.data)}};ws.send(cmd+'\n')})}
+async function ooklaPing(host,n=10,onSample){
+  const ws=await wsOpen(host);const out=[];
+  try{await wsText(ws,'HI');
+    for(let i=0;i<n;i++){const t=performance.now();try{await wsText(ws,'PING '+Date.now(),2000);const ms=performance.now()-t;out.push(ms);onSample&&onSample(ms)}catch(_){}}
+  }finally{try{ws.close()}catch(_){}}
+  if(!out.length) throw new Error('no-pong');
+  return {ping:median(out),jit:jitterOf(out),loss:1-out.length/n};
+}
+async function pickServer(){
+  const isp=GEO?.isp||'', org=GEO?.org||'';
+  const lat=GEO?.lat, lon=GEO?.lon;
+  OOKLA.forEach(s=>{s.match=ispMatch(s,isp)||ispMatch(s,org);s.km=(lat!=null&&lon!=null)?dist(lat,lon,s.lat,s.lon):9999});
+  const own=OOKLA.filter(s=>s.match);
+  const near=[...OOKLA].filter(s=>!s.match).sort((a,b)=>a.km-b.km).slice(0,6);
+  const probe=async s=>{try{const r=await ooklaPing(s.host,3);s.ms=r.ping;return s}catch(_){s.ms=null;return null}};
+  const ok=(await Promise.all([...own,...near].map(probe))).filter(Boolean);
+  const ownOk=ok.filter(s=>s.match).sort((a,b)=>a.ms-b.ms);
+  const best=ownOk[0]||ok.sort((a,b)=>a.ms-b.ms)[0]||null;
+  setServer(best,true);
+  fillSelect();
+}
+function setServer(s,auto){
+  SERVER=s;
+  if(s){$('srvName').textContent=s.sp;
+    $('srvMeta').textContent=`${s.city}${s.ms!=null?' · '+Math.round(s.ms)+' ms':''}${s.match?' · سيرفر مزودك ✓':auto?' · الأقرب لك':''}`;}
+  else{$('srvName').textContent='Cloudflare';$('srvMeta').textContent=(CF_NODE?CF_NODE+' · ':'')+'لم يتوفر سيرفر محلي'}
+}
+function fillSelect(){
+  const sel=$('srvSel');const cities={};OOKLA.forEach(s=>(cities[s.city]=cities[s.city]||[]).push(s));
+  sel.innerHTML='<option value="cf">Cloudflare (عالمي)</option>'+Object.entries(cities).map(([c,l])=>
+    `<optgroup label="${c}">${l.map(s=>`<option value="${s.id}" ${SERVER&&SERVER.id===s.id?'selected':''}>${s.sp}${s.match?' ✓':''}</option>`).join('')}</optgroup>`).join('');
+}
+$('chgBtn').onclick=()=>{$('srvSel').classList.toggle('hidden')};
+$('srvSel').onchange=async e=>{const v=e.target.value;$('srvSel').classList.add('hidden');
+  if(v==='cf') return setServer(null);
+  const s=OOKLA.find(x=>x.id==v);$('srvMeta').textContent='جاري الاتصال…';$('srvName').textContent=s.sp;
+  try{s.ms=(await ooklaPing(s.host,3)).ping;setServer(s)}catch(_){ $('srvMeta').textContent=s.city+' · السيرفر لا يستجيب ✕';SERVER=null}};
+
+/* Ookla download / upload over WebSocket (parallel sockets) */
+/* Download: HTTPS from the Ookla server. Needs (a) the page served from a real origin
+   (not a local file) and (b) the server to allow CORS. Otherwise → Cloudflare.          */
+async function ooklaCanHttp(host){
+  try{const r=await fetch(`https://${host}/download?nocache=${Math.random()}&size=100000`,{cache:'no-store'});
+    return r.ok&&(await r.arrayBuffer()).byteLength>0}catch(_){return false}
+}
+function ooklaDownload(host,dur=5000,streams=6){
+  let bytes=0,stop=false;const ctrl=new AbortController();
+  const worker=async()=>{while(!stop){try{
+    const r=await fetch(`https://${host}/download?nocache=${Math.random()}&size=25000000`,{cache:'no-store',signal:ctrl.signal});
+    const rd=r.body.getReader();for(;;){const{done,value}=await rd.read();if(done)break;bytes+=value.length;if(stop){rd.cancel().catch(()=>{});break}}
+  }catch(e){if(stop)break;await sleep(300)}}};
+  return runPhase(()=>bytes,dur,streams,worker,()=>{stop=true;ctrl.abort()});
+}
+/* Upload: WebSocket "UPLOAD" frames; only bytes the server acknowledged ("OK …") are counted. */
+async function ooklaUpload(host,dur=5000,streams=4){
+  const SZ=1<<20, payload=new Uint8Array(SZ);for(let i=0;i<SZ;i+=65536)crypto.getRandomValues(payload.subarray(i,i+65536));
+  payload.set(new TextEncoder().encode('UPLOAD '+SZ+' 0\n'));
+  let stop=false,acked=0;const socks=[];
+  const worker=async()=>{try{const ws=await wsOpen(host);socks.push(ws);
+    await wsText(ws,'HI');let inflight=0;
+    ws.onmessage=e=>{if(typeof e.data==='string'&&e.data.startsWith('OK')){acked+=SZ;inflight--}};
+    await new Promise(r=>{const iv=setInterval(()=>{if(stop){clearInterval(iv);return r()}
+      while(ws.readyState===1&&inflight<4){ws.send(payload);inflight++}},15)});
+  }catch(_){}};
+  return runPhase(()=>acked,dur,streams,worker,()=>{stop=true;socks.forEach(s=>{try{s.close()}catch(_){}})});
+}
+document.querySelector('.ip-hide').onclick=()=>{const e=$('n-ip');e.textContent=e.textContent.includes('•')?e.dataset.ip:'•••.•••.•••.•••'};
+const READY=loadNetwork().then(pickServer).catch(()=>setServer(null));
+
+/* ===================== Latency ===================== */
+async function hit(url,timeout=3000){
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout),s=performance.now();
+  try{await fetch(bust(url),{mode:'no-cors',cache:'no-store',signal:c.signal});return performance.now()-s}
+  catch(e){return null}finally{clearTimeout(t)}
+}
+async function measurePing(s){
+  if(s.regions) return measureGamePing(s);
+  for(const u of s.ping) await hit(u,4000);           // warm-up: DNS + TCP/QUIC + TLS
+  const N=8,out=[];let lost=0;
+  for(let i=0;i<N;i++){const ms=await hit(s.ping[i%s.ping.length]);
+    if(ms==null)lost++;else{out.push(ms);$('p-'+s.id).textContent=Math.round(ms)}
+    await sleep(50)}
+  return {ping:out.length?median(out):null,jit:out.length?jitterOf(out):null,loss:lost/N};
+}
+
+async function measureGamePing(s){
+  $('h-'+s.id).textContent='اختيار أقرب سيرفر للشرق الأوسط…';
+  const url=r=>`https://dynamodb.${r}.amazonaws.com/ping`;
+  const tryList=async list=>(await Promise.all(list.map(async([r,n])=>{await hit(url(r),3000);const v=[];
+    for(let i=0;i<3;i++){const ms=await hit(url(r),2500);if(ms!=null)v.push(ms)}return {r,n,ms:v.length?median(v):null}})))
+    .filter(x=>x.ms!=null).sort((a,b)=>a.ms-b.ms)[0];
+  const best=(await tryList(s.regions))||(s.fallback&&await tryList(s.fallback));
+  if(!best) return {ping:null,jit:null,loss:1};
+  $('h-'+s.id).textContent=`سيرفر المباراة: ${best.n}`;
+  const N=10,out=[];let lost=0;
+  for(let i=0;i<N;i++){const ms=await hit(url(best.r));if(ms==null)lost++;else{out.push(ms);$('p-'+s.id).textContent=Math.round(ms)}await sleep(50)}
+  return {ping:out.length?median(out):null,jit:out.length?jitterOf(out):null,loss:lost/N,gameHost:`سيرفر المباراة: ${best.n} (AWS)`};
+}
+
+/* ===================== Per-app throughput =====================
+   Downloads real files from the app's CDN in parallel; counts on-the-wire bytes
+   (encodedBodySize from Resource Timing ⇒ compression-aware).                     */
+async function probeAssets(list){
+  const ok=[];
+  await Promise.all(list.map(async u=>{
+    try{const url=bust(u);const r=await fetch(url,{mode:'cors',cache:'no-store'});
+      if(!r.ok) return; const b=await r.arrayBuffer();
+      await sleep(30); const e=performance.getEntriesByName(url).pop();
+      const enc=e&&e.encodedBodySize?e.encodedBodySize:b.byteLength;
+      ok.push({u,ratio:enc/b.byteLength,proto:e?.nextHopProtocol||'',host:new URL(u).host});
+    }catch(_){}
+  }));
+  return ok;
+}
+async function measureAppSpeed(s,onLive){
+  const assets=await probeAssets(s.assets);
+  if(!assets.length) return {mbps:null};
+  let bytes=0,stop=false,i=0; const ctrl=new AbortController();
+  const worker=async()=>{while(!stop){const a=assets[(i++)%assets.length];
+    try{const r=await fetch(bust(a.u),{mode:'cors',cache:'no-store',signal:ctrl.signal});const rd=r.body.getReader();
+      for(;;){const{done,value}=await rd.read();if(done)break;bytes+=value.length*a.ratio;if(stop){rd.cancel().catch(()=>{});break}}
+    }catch(_){if(stop)break;await sleep(150)}}};
+  const t0=performance.now(); let base=null,tb=0;
+  const meter=makeMeter(()=>bytes);
+  const iv=setInterval(()=>{onLive(meter());if(base==null&&performance.now()-t0>800){base=bytes;tb=performance.now()}},150);
+  const ws=Array.from({length:APP_STREAMS},worker);
+  await sleep(APP_SPEED_MS); stop=true; ctrl.abort(); clearInterval(iv);
+  await Promise.race([Promise.allSettled(ws),sleep(800)]);
+  const tEnd=t0+APP_SPEED_MS;
+  const mbps=base!=null&&tEnd>tb?((bytes-base)*8/((tEnd-tb)/1000))/1e6:(bytes*8/(APP_SPEED_MS/1000))/1e6;
+  performance.clearResourceTimings();
+  return {mbps,proto:assets[0].proto,host:assets[0].host};
+}
+
+/* ===================== Line throughput (Cloudflare) ===================== */
+function makeMeter(getBytes){const pts=[];return()=>{const t=performance.now(),b=getBytes();pts.push({t,b});
+  while(pts.length>2&&t-pts[0].t>1200)pts.shift();const o=pts[0],d=pts[pts.length-1];
+  return d.t>o.t?((d.b-o.b)*8/((d.t-o.t)/1000))/1e6:0}}
+async function runPhase(getBytes,dur,streams,worker,stopFn){
+  const m=makeMeter(getBytes),t0=performance.now();let b0=null,tb0=0;
+  const iv=setInterval(()=>{setGauge(m());if(b0==null&&performance.now()-t0>1500){b0=getBytes();tb0=performance.now()}},150);
+  const ws=Array.from({length:streams},worker);
+  await sleep(dur);stopFn();clearInterval(iv);
+  await Promise.race([Promise.allSettled(ws),sleep(1500)]);
+  const total=getBytes(),tEnd=t0+dur; if(!total) throw new Error('no-data');
+  return b0!=null?((total-b0)*8/((tEnd-tb0)/1000))/1e6:(total*8/(dur/1000))/1e6;
+}
+function download(dur=5000,streams=6){
+  let bytes=0,stop=false;const ctrl=new AbortController();
+  const worker=async()=>{while(!stop){try{
+    const r=await fetch(`https://speed.cloudflare.com/__down?bytes=50000000&r=${Math.random()}`,{cache:'no-store',signal:ctrl.signal});
+    const rd=r.body.getReader();for(;;){const{done,value}=await rd.read();if(done)break;bytes+=value.length;if(stop){rd.cancel().catch(()=>{});break}}
+  }catch(e){if(stop)break;await sleep(300)}}};
+  return runPhase(()=>bytes,dur,streams,worker,()=>{stop=true;ctrl.abort()});
+}
+function upload(dur=5000,streams=4){
+  let bytes=0,stop=false;const xhrs=new Set();
+  const chunk=new Uint8Array(8*1024*1024);for(let i=0;i<chunk.length;i+=65536)crypto.getRandomValues(chunk.subarray(i,i+65536));
+  const blob=new Blob([chunk]);
+  const worker=()=>new Promise(res=>{const go=()=>{if(stop)return res();
+    const x=new XMLHttpRequest();let last=0;xhrs.add(x);
+    x.upload.onprogress=e=>{bytes+=e.loaded-last;last=e.loaded};
+    x.onloadend=()=>{xhrs.delete(x);stop?res():go()};
+    x.open('POST','https://speed.cloudflare.com/__up?r='+Math.random());x.send(blob)};go()});
+  return runPhase(()=>bytes,dur,streams,worker,()=>{stop=true;xhrs.forEach(x=>x.abort())});
+}
+
+/* ===================== UI: service cards ===================== */
+function renderCards(){
+  $('grid').innerHTML=SERVICES.map(s=>`
+   <div class="svc" id="c-${s.id}" style="--c:${s.c}">
+     <div class="svc-top">
+       <div class="ico" style="background:${s.bg};box-shadow:0 8px 24px ${s.c}55">${s.icon}</div>
+       <div><div class="nm">${s.name}</div><div class="sub">${s.ar}</div></div>
+       <span class="st" id="g-${s.id}">بالانتظار</span>
+     </div>
+     <div class="mets">
+       <div class="met"><div class="mk">⚡ السرعة</div><div class="mv"><span id="v-${s.id}">${s.assets.length?'··':'—'}</span><small>Mbps</small></div></div>
+       <div class="met"><div class="mk">📶 البنق</div><div class="mv"><span id="p-${s.id}">··</span><small>ms</small></div></div>
+     </div>
+     <div class="bar"><i id="b-${s.id}" class="shimmer" style="width:100%"></i></div>
+     <div class="meta"><span class="host" id="h-${s.id}">${s.regions?'سيرفر المباراة: الشرق الأوسط':new URL((s.assets[0]||s.ping[0])).host}</span>
+       <span>تذبذب <b id="j-${s.id}">—</b> · فقد <b id="l-${s.id}">—</b></span></div>
+   </div>`).join('');
+  SERVICES.forEach((s,i)=>setTimeout(()=>$('c-'+s.id).classList.add('show'),i*110));
+}
+function finishCard(s,r){
+  const pg=pingGrade(r.ping);
+  $('p-'+s.id).textContent=r.ping==null?'✕':Math.round(r.ping);
+  $('j-'+s.id).textContent=r.jit==null?'—':Math.round(r.jit)+'ms';
+  $('l-'+s.id).textContent=Math.round(r.loss*100)+'%';
+  $('v-'+s.id).textContent=r.mbps==null?'—':fmt(r.mbps);
+  if(r.host) $('h-'+s.id).innerHTML=`${r.host} ${r.proto?`<span class="proto">${r.proto.toUpperCase()}</span>`:''}`;
+  const b=$('b-'+s.id);b.classList.remove('shimmer');
+  // overall grade: worst of ping grade and speed grade
+  const g=r.mbps==null?pg.s:r.mbps>=25?3:r.mbps>=10?2:r.mbps>=4?1:0;   // graded on speed
+  const G=[['ضعيف','var(--bad)'],['متوسط','var(--mid)'],['جيد','#8be36b'],['ممتاز','var(--ok)']][g];
+  if(r.ping==null&&r.mbps==null){G[0]='لا يستجيب';G[1]='var(--bad)'}
+  b.style.width=(r.mbps!=null?Math.max(6,frac(r.mbps)*100):Math.max(6,(3-pg.s+1)*25))+'%'; b.style.background=G[1];
+  const st=$('g-'+s.id); st.textContent=G[0]; st.style.color=G[1];
+  $('c-'+s.id).classList.remove('testing');
+}
+
+/* ===================== Main flow ===================== */
+function activate(id){document.querySelectorAll('.stat').forEach(s=>s.classList.toggle('active',s.id===id))}
+function badge(id,ok,mid){const el=$(id);
+  const [t,c,b]=ok?['ممتاز','var(--ok)','rgba(34,227,155,.12)']:mid?['مقبول','var(--mid)','rgba(255,197,66,.12)']:['ضعيف','var(--bad)','rgba(255,77,109,.12)'];
+  el.textContent=t;el.style.color=c;el.style.background=b}
+
+async function run(){
+  $('err').textContent='';$('startBtn').classList.add('hidden');$('center').classList.remove('hidden');
+  ['ping','jit','dl','ul'].forEach(k=>$(k).textContent='—');
+  ['u-game','u-4k','u-short','u-call'].forEach(k=>{$(k).textContent='—';$(k).style.color='var(--mut)';$(k).style.background='rgba(255,255,255,.06)'});
+  $('svcSection').classList.remove('hidden');renderCards();setGauge(0);
+  await sleep(SERVICES.length*110+300);
+
+  // 1) Apps: ping + speed
+  const res={};
+  for(const s of SERVICES){
+    const card=$('c-'+s.id);card.classList.add('testing');
+    $('svcStatus').textContent=`جاري فحص ${s.ar}…`;$('who').textContent=s.name;
+    $('g-'+s.id).textContent='قياس البنق…';$('phase').textContent=`بنق ${s.ar}`;$('unit').textContent='ms';activate('s-ping');
+    const p=await measurePing(s); if(p.ping!=null){$('val').textContent=Math.round(p.ping);}
+    let sp={mbps:null};
+    if(s.assets.length){
+      $('g-'+s.id).textContent='قياس السرعة…';$('phase').textContent=`سرعة ${s.ar}`;$('unit').textContent='Mbps';activate('s-dl');
+      sp=await measureAppSpeed(s,v=>{setGauge(v);$('v-'+s.id).textContent=fmt(v);
+        const b=$('b-'+s.id);b.classList.remove('shimmer');b.style.width=Math.max(4,frac(v)*100)+'%';b.style.background=s.c});
+    }
+    res[s.id]={...p,...sp};if(p.gameHost){res[s.id].host=p.gameHost;res[s.id].proto=''}finishCard(s,res[s.id]);setGauge(0);
+  }
+  const ok=Object.values(res).filter(r=>r.ping!=null);
+  $('svcStatus').textContent=`تم · ${ok.length}/${SERVICES.length} تستجيب`;
+
+  // 2) Line test on the selected server (ISP / nearest Ookla server, else Cloudflare)
+  await READY;
+  let ping=null,jit=null,dl=null,ul=null;const S=SERVER;
+  $('who').textContent=S?`${S.sp} · ${S.city}`:'Cloudflare';
+  $('phase').textContent='بنق سيرفر الفحص';$('unit').textContent='ms';activate('s-ping');setGauge(0,false);
+  if(S){try{const r=await ooklaPing(S.host,12,ms=>$('val').textContent=Math.round(ms));ping=r.ping;jit=r.jit}catch(_){}}
+  if(ping==null){ping=ok.length?median(ok.map(r=>r.ping)):null;jit=ok.length?median(ok.map(r=>r.jit)):null}
+  $('ping').textContent=ping==null?'✕':Math.round(ping);$('jit').textContent=jit==null?'✕':Math.round(jit);activate('s-jit');await sleep(300);
+  if(S) $('srvMeta').textContent=`${S.city} · ${Math.round(ping)} ms${S.match?' · سيرفر مزودك ✓':''}`;
+
+  const httpOk=S?await ooklaCanHttp(S.host):false;
+  try{$('unit').textContent='Mbps';activate('s-dl');
+    if(httpOk){$('phase').textContent='سرعة التحميل ↓';dl=await ooklaDownload(S.host)}
+    else{$('phase').textContent='سرعة التحميل ↓ (عبر Cloudflare)';$('who').textContent='Cloudflare';dl=await download()}
+    $('dl').textContent=fmt(dl)}
+  catch(e){$('dl').textContent='✕';$('err').textContent='تعذر الوصول لسيرفر قياس السرعة.'}
+  setGauge(0);await sleep(400);
+  try{$('phase').textContent='سرعة الرفع ↑';activate('s-ul');$('who').textContent=S?`${S.sp} · ${S.city}`:'Cloudflare';
+    ul=S?await ooklaUpload(S.host).catch(()=>upload()):await upload();$('ul').textContent=fmt(ul)}
+  catch(e){$('ul').textContent='✕'}
+  if(S) $('srvMeta').textContent=`${S.city} · ${Math.round(ping)} ms${S.match?' · سيرفر مزودك ✓':''}${httpOk?'':' · التحميل عبر Cloudflare'}`;
+
+  // 3) Summary
+  activate('');$('phase').textContent='اكتمل الفحص ✓';setGauge(0);await sleep(450);
+  $('center').classList.add('hidden');const sb=$('startBtn');sb.textContent='إعادة';sb.classList.remove('hidden');
+  const pg=res.pubg?.ping??ping, yt=res.yt?.mbps??dl, tt=res.tt?.mbps??dl;
+  badge('u-game',pg!=null&&pg<70&&jit<20,pg!=null&&pg<130&&jit<40);
+  badge('u-4k',yt>=25,yt>=10);
+  badge('u-short',tt>=10,tt>=4);
+  badge('u-call',ul>=3&&jit!=null&&jit<30,ul>=1.5);
+  
+}
+$('startBtn').onclick=run;
+</script>
+</body>
+</html>
