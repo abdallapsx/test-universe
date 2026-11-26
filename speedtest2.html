@@ -114,6 +114,30 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 .chg{border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--txt);font-family:inherit;font-weight:700;font-size:13px;border-radius:10px;padding:7px 12px;cursor:pointer}
 .chg:hover{border-color:var(--acc)}
 #srvSel{width:100%;background:#0d1222;color:var(--txt);border:1px solid var(--border);border-radius:12px;padding:10px;font-family:inherit;font-size:14px}
+/* ===== Tabs + games ===== */
+.tabs{display:flex;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:4px}
+.tab{border:0;background:transparent;color:var(--mut);font-family:inherit;font-weight:800;font-size:14px;padding:7px 14px;border-radius:9px;cursor:pointer;transition:.2s}
+.tab.on{background:linear-gradient(135deg,rgba(0,224,255,.18),rgba(124,92,255,.22));color:var(--txt);box-shadow:inset 0 0 0 1px rgba(0,224,255,.35)}
+.gbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 4px 10px;font-size:12px;color:var(--mut)}
+.gbtn{border:1px solid rgba(0,224,255,.45);background:rgba(0,224,255,.1);color:var(--txt);font-family:inherit;font-weight:800;font-size:13px;border-radius:10px;padding:7px 14px;cursor:pointer;white-space:nowrap}
+.gbtn:disabled{opacity:.5;cursor:default}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.gcard{min-width:0;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden;
+  opacity:0;transform:translateY(14px);transition:border-color .3s}
+.gcard.show{animation:pop .5s cubic-bezier(.2,.9,.3,1.3) forwards}
+.gcard.testing{border-color:var(--c)}
+.gtile{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0;letter-spacing:-.3px;font-family:system-ui,sans-serif}
+.gcard.testing .gtile{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(.9);opacity:.7}}
+.ginfo{min-width:0;flex:1}
+.gname{direction:ltr;text-align:right;font-weight:800;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsrv{font-size:11px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gms{text-align:left;flex-shrink:0}
+.gms b{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.gms small{font-size:10px;color:var(--mut)}
+.gms .gg{display:block;font-size:10.5px;font-weight:800}
+.gcard .gline{position:absolute;bottom:0;right:0;height:3px;width:0;transition:width .5s,background .3s}
+
 /* ===== Desktop: everything on one screen, no scrolling ===== */
 #srvSel{grid-column:1/-1}
 @media(min-width:1000px){
@@ -147,6 +171,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
   .note{display:none}
 }
 @media(min-width:1000px) and (max-width:1279px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media(min-width:1000px){ .ggrid{grid-template-columns:repeat(4,minmax(0,1fr))} .gbar{margin-bottom:8px} }
+@media(min-width:1000px) and (max-width:1279px){ .ggrid{grid-template-columns:repeat(3,minmax(0,1fr))} }
 
 /* ===== Mobile ===== */
 @media(max-width:600px){
@@ -163,6 +189,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
   .srvbox b{font-size:14.5px}.srvbox .ri{width:34px;height:34px;font-size:16px}
   .sec-title{margin:22px 2px 10px}.sec-title h2{font-size:16px}
   .grid{grid-template-columns:1fr 1fr;gap:9px}
+  .ggrid{grid-template-columns:1fr 1fr;gap:8px}.gcard{padding:9px;gap:8px}.gtile{width:32px;height:32px;font-size:11.5px}.gms b{font-size:17px}
+  .tab{font-size:12.5px;padding:6px 10px}.gbar{flex-direction:column;align-items:stretch;text-align:center}
   .svc{padding:11px;gap:8px;border-radius:16px}
   .svc-top{gap:8px}
   .ico{width:32px;height:32px;border-radius:10px}.ico svg{width:17px;height:17px}
@@ -248,14 +276,25 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
     </div>
   </section>
 
-  <div id="svcSection" class="hidden">
-    <div class="sec-title"><h2>سرعة وبنق التطبيقات</h2><span id="svcStatus">جاري الفحص…</span></div>
-    <div class="grid" id="grid"></div>
+  <div id="svcSection">
+    <div class="sec-title">
+      <div class="tabs">
+        <button class="tab on" data-t="apps">📱 سرعة التطبيقات</button>
+        <button class="tab" data-t="games">🎮 بنق الألعاب</button>
+      </div>
+      <span id="svcStatus"></span>
+    </div>
+    <div id="appsPane"><div class="grid" id="grid"></div></div>
+    <div id="gamesPane" class="hidden">
+      <div class="gbar"><span>البنق لمراكز البيانات التي تستضيف سيرفرات كل لعبة · يُختار الأقرب للعراق (الشرق الأوسط أو أوروبا)</span>
+        <button class="gbtn" id="gamesBtn">▶ فحص الألعاب</button></div>
+      <div class="ggrid" id="ggrid"></div>
+    </div>
   </div>
 
   <p class="note">
     سرعة كل تطبيق تُقاس بتحميل ملفات حقيقية من خوادم التطبيق نفسه (CDN) لمدة ثوانٍ، والبنق يُقاس لنفس الخوادم.<br>
-    البنق والرفع يُقاسان على سيرفر مزودك أو أقرب سيرفر داخل العراق. بنق ببجي يُقاس لأقرب مركز بيانات أوروبي لسيرفرات المباريات (AWS).
+    البنق والرفع يُقاسان على سيرفر مزودك أو أقرب سيرفر داخل العراق. بنق الألعاب يُقاس لأقرب مركز بيانات (الشرق الأوسط أو أوروبا) يستضيف سيرفرات كل لعبة.
   </p>
 </div>
 
@@ -626,6 +665,76 @@ function finishCard(s,r){
   $('c-'+s.id).classList.remove('testing');
 }
 
+/* ===================== Games ping =====================
+   Browsers can't reach game servers (UDP), so each game is pinged on the cloud
+   data centres that host its match servers; the nearest one to the user wins.   */
+const GREG={
+  'aws:me-central-1':['الإمارات','AWS'],'aws:me-south-1':['البحرين','AWS'],
+  'aws:eu-central-1':['فرانكفورت','AWS'],'aws:eu-south-1':['ميلانو','AWS'],'aws:eu-west-1':['أيرلندا','AWS'],
+  'aws:eu-west-2':['لندن','AWS'],'aws:eu-north-1':['ستوكهولم','AWS'],
+  'az:uaenorth':['الإمارات','Azure'],'az:westeurope':['هولندا','Azure'],'az:northeurope':['أيرلندا','Azure'],
+};
+const regUrl=k=>{const[p,r]=k.split(':');return p==='aws'?`https://dynamodb.${r}.amazonaws.com/ping`:`https://s8${r}.blob.core.windows.net/public/latency-test.json`};
+const ME=['aws:me-central-1','aws:me-south-1'];
+const GAMES=[
+  {id:'pubgm',name:'PUBG Mobile',t:'PM',bg:'linear-gradient(135deg,#ffcc33,#c77800)',reg:[...ME,'aws:eu-central-1','aws:eu-south-1']},
+  {id:'arc',name:'ARC Raiders',t:'AR',bg:'linear-gradient(135deg,#ff5a3c,#8a1f12)',reg:['aws:me-south-1','aws:eu-north-1','aws:eu-central-1']},
+  {id:'finals',name:'The Finals',t:'TF',bg:'linear-gradient(135deg,#ff2e63,#6a0f2c)',reg:['aws:me-south-1','aws:eu-north-1','aws:eu-central-1']},
+  {id:'apex',name:'Apex Legends',t:'AL',bg:'linear-gradient(135deg,#e03131,#5c0b0b)',reg:['aws:me-south-1','aws:eu-central-1']},
+  {id:'bf',name:'Battlefield 6 / 1',t:'BF',bg:'linear-gradient(135deg,#3a86ff,#0b2a66)',reg:[...ME,'aws:eu-central-1','aws:eu-west-1']},
+  {id:'r6',name:'Rainbow Six Siege',t:'R6',bg:'linear-gradient(135deg,#adb5bd,#343a40)',reg:['az:uaenorth','az:westeurope','az:northeurope']},
+  {id:'fc',name:'EA SPORTS FC',t:'FC',bg:'linear-gradient(135deg,#00d084,#005c3a)',reg:[...ME,'aws:eu-central-1','aws:eu-south-1','aws:eu-west-1']},
+  {id:'efb',name:'eFootball (PES)',t:'eF',bg:'linear-gradient(135deg,#4361ee,#1b1f5e)',reg:['aws:eu-central-1','aws:eu-south-1','aws:eu-west-1']},
+  {id:'cod',name:'Call of Duty: Warzone',t:'CoD',bg:'linear-gradient(135deg,#6c757d,#1b1e21)',reg:[...ME,'aws:eu-central-1','aws:eu-west-2']},
+  {id:'fn',name:'Fortnite',t:'FN',bg:'linear-gradient(135deg,#a663ff,#2b0b5e)',reg:[...ME,'aws:eu-central-1','aws:eu-west-2']},
+  {id:'val',name:'Valorant',t:'VL',bg:'linear-gradient(135deg,#ff4655,#7a0f19)',reg:['aws:me-south-1','aws:eu-central-1','aws:eu-south-1']},
+  {id:'lol',name:'League of Legends',t:'LoL',bg:'linear-gradient(135deg,#c8a24a,#3b2c0b)',reg:[...ME,'aws:eu-central-1']},
+];
+function gameGrade(ms){if(ms==null)return['لا يستجيب','var(--bad)',100];
+  if(ms<40)return['ممتاز','var(--ok)',ms/150*100];if(ms<70)return['جيد','#8be36b',ms/150*100];
+  if(ms<110)return['متوسط','var(--mid)',ms/150*100];return['ضعيف','var(--bad)',Math.min(100,ms/150*100)]}
+function renderGames(){
+  $('ggrid').innerHTML=GAMES.map(g=>`
+   <div class="gcard" id="gc-${g.id}" style="--c:#00e0ff">
+     <div class="gtile" style="background:${g.bg}">${g.t}</div>
+     <div class="ginfo"><div class="gname">${g.name}</div><div class="gsrv" id="gs-${g.id}">بالانتظار</div></div>
+     <div class="gms"><b id="gp-${g.id}">—</b><small> ms</small><span class="gg" id="gg-${g.id}"></span></div>
+     <i class="gline" id="gl-${g.id}"></i>
+   </div>`).join('');
+  GAMES.forEach((g,i)=>setTimeout(()=>$('gc-'+g.id).classList.add('show'),i*60));
+}
+async function probeRegion(k){
+  const u=regUrl(k);await hit(u,3500);const v=[];let lost=0;
+  for(let i=0;i<6;i++){const ms=await hit(u,2500);if(ms==null)lost++;else v.push(ms);await sleep(40)}
+  return v.length?{ping:median(v),jit:jitterOf(v),loss:lost/6}:null;
+}
+let GAMES_RUNNING=false;
+async function runGames(){
+  if(GAMES_RUNNING)return;GAMES_RUNNING=true;$('gamesBtn').disabled=true;showTab('games');
+  renderGames();await sleep(GAMES.length*60+200);
+  GAMES.forEach(g=>{$('gc-'+g.id).classList.add('testing');$('gs-'+g.id).textContent='جاري القياس…'});
+  $('svcStatus').textContent='جاري قياس بنق الألعاب…';
+  const keys=[...new Set(GAMES.flatMap(g=>g.reg))],R={};
+  await Promise.all(keys.map(async k=>{R[k]=await probeRegion(k)}));
+  let ok=0;
+  for(const g of GAMES){
+    const best=g.reg.filter(k=>R[k]).sort((a,b)=>R[a].ping-R[b].ping)[0];
+    const r=best?R[best]:null;const[t,c,w]=gameGrade(r?.ping);
+    $('gp-'+g.id).textContent=r?Math.round(r.ping):'✕';
+    $('gs-'+g.id).textContent=r?`${GREG[best][0]} · ${GREG[best][1]} · تذبذب ${Math.round(r.jit)}ms`:'لا يوجد سيرفر يستجيب';
+    const gg=$('gg-'+g.id);gg.textContent=t;gg.style.color=c;
+    const l=$('gl-'+g.id);l.style.width=Math.max(8,w)+'%';l.style.background=c;
+    $('gc-'+g.id).classList.remove('testing');if(r)ok++;await sleep(70);
+  }
+  $('svcStatus').textContent=`تم · ${ok}/${GAMES.length} لعبة`;
+  GAMES_RUNNING=false;$('gamesBtn').disabled=false;
+  return R;
+}
+function showTab(t){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  $('appsPane').classList.toggle('hidden',t!=='apps');$('gamesPane').classList.toggle('hidden',t!=='games')}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.t));
+$('gamesBtn').onclick=()=>runGames();
+
 /* ===================== Main flow ===================== */
 function activate(id){document.querySelectorAll('.stat').forEach(s=>s.classList.toggle('active',s.id===id))}
 function badge(id,ok,mid){const el=$(id);
@@ -636,7 +745,7 @@ async function run(){
   $('err').textContent='';$('startBtn').classList.add('hidden');$('center').classList.remove('hidden');
   ['ping','jit','dl','ul'].forEach(k=>$(k).textContent='—');
   ['u-game','u-4k','u-short','u-call'].forEach(k=>{$(k).textContent='—';$(k).style.color='var(--mut)';$(k).style.background='rgba(255,255,255,.06)'});
-  $('svcSection').classList.remove('hidden');renderCards();setGauge(0);
+  showTab('apps');renderCards();setGauge(0);
   await sleep(SERVICES.length*110+300);
 
   // 1) Apps: ping + speed
@@ -679,7 +788,11 @@ async function run(){
   catch(e){$('ul').textContent='✕'}
   if(S) $('srvMeta').textContent=`${S.city} · ${Math.round(ping)} ms${S.match?' · سيرفر مزودك ✓':''}${httpOk?'':' · التحميل عبر Cloudflare'}`;
 
-  // 3) Summary
+  // 3) Games ping
+  $('phase').textContent='بنق الألعاب 🎮';$('who').textContent='';
+  try{await runGames()}catch(_){}
+
+  // 4) Summary
   activate('');$('phase').textContent='اكتمل الفحص ✓';setGauge(0);await sleep(450);
   $('center').classList.add('hidden');const sb=$('startBtn');sb.textContent='إعادة';sb.classList.remove('hidden');
   const pg=res.pubg?.ping??ping, yt=res.yt?.mbps??dl, tt=res.tt?.mbps??dl;
@@ -690,6 +803,7 @@ async function run(){
   
 }
 $('startBtn').onclick=run;
+renderCards();renderGames();
 </script>
 </body>
 </html>
