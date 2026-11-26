@@ -286,7 +286,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
     </div>
     <div id="appsPane"><div class="grid" id="grid"></div></div>
     <div id="gamesPane" class="hidden">
-      <div class="gbar"><span>البنق لمراكز البيانات التي تستضيف سيرفرات كل لعبة · يُختار الأقرب للعراق (الشرق الأوسط أو أوروبا)</span>
+      <div class="gbar"><span>🟢 = بنق سيرفرات المباريات الحقيقية مقاسة من شبكتنا · الباقي تقديري لأقرب مركز بيانات للعبة</span>
         <button class="gbtn" id="gamesBtn">▶ فحص الألعاب</button></div>
       <div class="ggrid" id="ggrid"></div>
     </div>
@@ -709,19 +709,63 @@ async function probeRegion(k){
   return v.length?{ping:median(v),jit:jitterOf(v),loss:lost/6}:null;
 }
 let GAMES_RUNNING=false;
+/* ---- real match-server ping published by the ISP router (erixx → Gist) ---- */
+const ROUTER_URL='https://gist.githubusercontent.com/abdallapsx/79d4a59abf6d57be39cd27bc86379596/raw/tu-games.json';
+const RMAP={pubgm:['pubgm'],cod:['cod'],ea:['fc','bf'],val:['val'],apex:['apex']};
+const IPINFO={};
+async function ipInfo(ip){
+  if(IPINFO[ip])return IPINFO[ip];
+  try{const j=await (await fetch('https://ipwho.is/'+ip)).json();
+    IPINFO[ip]={cc:j.country_code||'',org:(j.connection&&(j.connection.isp||j.connection.org))||''}}
+  catch(e){IPINFO[ip]={cc:'',org:''}}
+  return IPINFO[ip];
+}
+async function loadRouterGames(){
+  const out={};
+  try{
+    const d=await (await fetch(ROUTER_URL+'?t='+Date.now(),{cache:'no-store'})).json();
+    if(!d||!Array.isArray(d.games))return out;
+    for(const g of d.games){
+      const priv=ip=>/^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/.test(ip);
+      const srv=(g.servers||[]).filter(x=>x&&x.ip&&!priv(x.ip));if(!srv.length)continue;
+      const info=await Promise.all(srv.map(x=>ipInfo(x.ip)));
+      const remote=[],local=[];let org='';
+      srv.forEach((x,i)=>{const isLocal=info[i].cc==='IQ';
+        if(!isLocal&&!org)org=info[i].org;
+        if(x.ms10>0)(isLocal?local:remote).push(x.ms10/10)});
+      const blocked=srv.filter((x,i)=>info[i].cc!=='IQ'&&!(x.ms10>0)).length;
+      const r={match:remote.length?median(remote):null,local:local.length?median(local):null,
+        n:srv.length,org:org.replace(/ (Computer Systems )?Company Limited|,? (Inc|Ltd|LLC)\.?$/i,''),blocked,updated:d.updated,line:d.line};
+      (RMAP[g.id]||[g.id]).forEach(id=>out[id]=r);
+    }
+  }catch(e){}
+  return out;
+}
+
 async function runGames(){
   if(GAMES_RUNNING)return;GAMES_RUNNING=true;$('gamesBtn').disabled=true;showTab('games');
   renderGames();await sleep(GAMES.length*60+200);
   GAMES.forEach(g=>{$('gc-'+g.id).classList.add('testing');$('gs-'+g.id).textContent='جاري القياس…'});
   $('svcStatus').textContent='جاري قياس بنق الألعاب…';
   const keys=[...new Set(GAMES.flatMap(g=>g.reg))],R={};
-  await Promise.all(keys.map(async k=>{R[k]=await probeRegion(k)}));
+  let RT={};
+  await Promise.all([...keys.map(async k=>{R[k]=await probeRegion(k)}),loadRouterGames().then(x=>RT=x)]);
   let ok=0;
   for(const g of GAMES){
     const best=g.reg.filter(k=>R[k]).sort((a,b)=>R[a].ping-R[b].ping)[0];
-    const r=best?R[best]:null;const[t,c,w]=gameGrade(r?.ping);
-    $('gp-'+g.id).textContent=r?Math.round(r.ping):'✕';
-    $('gs-'+g.id).textContent=r?`${GREG[best][0]} · ${GREG[best][1]} · تذبذب ${Math.round(r.jit)}ms`:'لا يوجد سيرفر يستجيب';
+    let r=best?R[best]:null;
+    const rt=RT[g.id];
+    if(rt&&(rt.match!=null||rt.local!=null)){            // real match servers seen on our network
+      const ms=rt.match!=null?rt.match:rt.local;r={ping:ms};
+      $('gp-'+g.id).textContent=Math.round(ms);
+      let txt='🟢 من شبكتنا · '+(rt.match!=null?(rt.org||'سيرفر المباراة'):'سيرفر محلي')+` · ${rt.n} سيرفر`;
+      if(rt.match!=null&&rt.local!=null)txt+=` · محلي ${Math.round(rt.local)}ms`;
+      $('gs-'+g.id).textContent=txt;$('gs-'+g.id).title='آخر قياس من الراوتر: '+rt.updated;
+    }else{
+      $('gp-'+g.id).textContent=r?Math.round(r.ping):'✕';
+      $('gs-'+g.id).textContent=r?`${GREG[best][0]} · ${GREG[best][1]} · تقديري`:'لا يوجد سيرفر يستجيب';
+    }
+    const[t,c,w]=gameGrade(r?.ping);
     const gg=$('gg-'+g.id);gg.textContent=t;gg.style.color=c;
     const l=$('gl-'+g.id);l.style.width=Math.max(8,w)+'%';l.style.background=c;
     $('gc-'+g.id).classList.remove('testing');if(r)ok++;await sleep(70);
